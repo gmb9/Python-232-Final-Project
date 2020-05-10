@@ -31,20 +31,6 @@ playerImg.set_colorkey((255, 255, 255))
 grassImg = pygame.image.load('grass.png')
 dirtImg = pygame.image.load('dirt.png')
 
-tiles = [['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-         ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','2','2','2','2','2'],
-         ['0','0','0','0','0','0','0','0','0','0','2','2','0','0','0','0','0','0','0'],
-         ['0','0','0','0','0','0','2','2','0','0','0','0','0','0','0','0','0','0','0'],
-         ['0','0','2','2','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-         ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-         ['2','2','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','2','2'],
-         ['1','1','2','2','2','2','2','2','2','2','2','2','2','2','2','2','2','1','1'],
-         ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-         ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-         ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-         ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-         ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1']]
-
 #Game Over Text
 over_font = pygame.font.Font('freesansbold.ttf', 64)
 
@@ -54,6 +40,20 @@ over_font = pygame.font.Font('freesansbold.ttf', 64)
 
 #def display(img, x, y):
     #screen.blit(img, (x, y))
+
+def load_map(path):
+    f = open(path + '.txt', 'r')
+    data = f.read()
+    f.close()
+
+    data = data.split('\n')
+    tiles = []
+    for row in data:
+        tiles.append(list(row))
+
+    return tiles
+
+tiles = load_map('map')
 
 def game_over_text():
     over_text = over_font.render("You Lose...", True, (255, 255, 255))
@@ -102,8 +102,8 @@ def menu():
 
         mx, my = pygame.mouse.get_pos()
 
-        button_1 = pygame.Rect(50, 100, 200, 50)
-        button_2 = pygame.Rect(50, 200, 200, 50)
+        button_1 = pygame.Rect(50, 100, 50, 25)
+        #button_2 = pygame.Rect(50, 200, 200, 50)
         if button_1.collidepoint((mx, my)):
             if click:
                 game()
@@ -114,7 +114,9 @@ def menu():
 
 
         pygame.draw.rect(screen, (255, 0, 0), button_1)
-        pygame.draw.rect(screen, (255, 0, 0), button_2)
+        #pygame.draw.rect(screen, (255, 0, 0), button_2)
+
+        draw_text('Play', font, (0, 0, 0), screen, 50, 100)
 
         click = False
 
@@ -131,35 +133,60 @@ def menu():
                     click = True
         
         pygame.display.update()
-        #mainClock.tick(60)
+        clock.tick(60)
 
 def game():
     vertical_momentum = 0
     moving_right = False
     moving_left = False
     air_timer = 0
+    true_scroll = [0,0]
 
     player_rect = pygame.Rect(100, 100, 5, 13)
 
+    #Background objects for paralax scrolling, [X, Y, Width, Height]
+    background_objects = [[0.25, [120, 10, 70, 400]], [0.25, [280, 30, 40, 400]], [0.5, [30, 40, 40, 400]], [0.5, [130, 90, 100, 400]], [0.5, [300, 80, 120, 400]]]
+
     running = True
     while running:
-        draw_text('Game', font, (0, 0, 0), screen, 20, 20)
-        display.fill((255, 255, 255))
+        display.fill((126, 19, 158))
+
+        #Screen scroll, following character
+        true_scroll[0] += (player_rect.x - true_scroll[0] - 152) / 20 #-152 / -106 to correctly display with display size
+        true_scroll[1] += (player_rect.y - true_scroll[1] - 106) / 20 #/20 makes camera smoother
+        scroll = true_scroll.copy()
+        scroll[0] = int(scroll[0])
+        scroll[1] = int(scroll[1])
+
+        #Background object paralax scrolling, line 148
+        pygame.draw.rect(display, (59, 0, 77), pygame.Rect(0, 120, 300, 800))
+        for background_object in background_objects:
+            obj_rect = pygame.Rect(background_object[1][0] - scroll[0] * background_object[0], #x-axis
+                       background_object[1][1] - scroll[1] * background_object[0], #y-axis
+                       background_object[1][2], #width
+                       background_object[1][3]) #height
+            if background_object[0] == 0.5:
+                pygame.draw.rect(display, (77, 0, 64), obj_rect)
+            else:
+                pygame.draw.rect(display, (156, 0, 130), obj_rect)
         
+
+        #Generate tiles based on map.txt
         tile_rects = []
         y = 0
         for layer in tiles:
             x = 0
             for tile in layer:
                 if tile == '1':
-                    display.blit(dirtImg,(x*16,y*16)) #16x16 is image resolution
+                    display.blit(dirtImg,(x*16 - scroll[0], y*16 - scroll[1])) #16x16 is image resolution
                 if tile == '2':
-                    display.blit(grassImg,(x*16,y*16))
+                    display.blit(grassImg,(x*16 - scroll[0], y*16 - scroll[1]))
                 if tile != '0':
-                    tile_rects.append(pygame.Rect(x*16,y*16,16,16))
+                    tile_rects.append(pygame.Rect(x*16, y*16, 16, 16))
                 x += 1
             y += 1
 
+        #Basic player movement physics
         player_movement = [0, 0]
         if moving_right == True:
             player_movement[0] += 3
@@ -172,15 +199,17 @@ def game():
         
         player_rect, collisions = move(player_rect, player_movement, tile_rects)
 
+        #Stops character from performing infinite mid-air jumps
         if collisions['bottom'] == True:
             air_timer = 0
             vertical_momentum = 0
         else:
             air_timer += 1
 
+        #Character display
+        display.blit(playerImg, (player_rect.x - scroll[0], player_rect.y - scroll[1]))
 
-        display.blit(playerImg, (player_rect.x, player_rect.y))
-
+        #Keyboard controls
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -193,7 +222,7 @@ def game():
                     moving_left = True
                 if event.key == pygame.K_SPACE:
                     if air_timer < 5:
-                        vertical_momentum = -4
+                        vertical_momentum = -4 #Effects height of jump
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
                     moving_right = False
@@ -201,7 +230,11 @@ def game():
                     moving_left = False
 
         screen.blit(pygame.transform.scale(display, WINDOW_SIZE), (0,0))
+        draw_text('Game', font, (0, 0, 0), screen, 20, 20)
         pygame.display.update()
+        
+        #Locks FPS at 60 
+        #NOTE: The higher the FPS the higher the speed of the game
         clock.tick(60)
 
 menu()
