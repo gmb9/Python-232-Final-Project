@@ -145,7 +145,7 @@ def game():
     player_rect = pygame.Rect(100, 100, 5, 13)
 
     #Background objects for paralax scrolling, [X, Y, Width, Height]
-    background_objects = [[0.25, [120, 10, 70, 400]], [0.25, [280, 30, 40, 400]], [0.5, [30, 40, 40, 400]], [0.5, [130, 90, 100, 400]], [0.5, [300, 80, 120, 400]]]
+    background_objects = [[0.12, [80, 5, 90, 400]], [0.25, [120, 10, 70, 400]], [0.25, [120, 10, 70, 400]], [0.25, [280, 30, 40, 400]], [0.5, [30, 40, 40, 400]], [0.5, [130, 90, 100, 400]], [0.5, [300, 80, 120, 400]]]
 
     running = True
     while running:
@@ -167,8 +167,10 @@ def game():
                        background_object[1][3]) #height
             if background_object[0] == 0.5:
                 pygame.draw.rect(display, (77, 0, 64), obj_rect)
+            elif background_object[0] == 0.25:
+                pygame.draw.rect(display, (156, 0, 134), obj_rect)
             else:
-                pygame.draw.rect(display, (156, 0, 130), obj_rect)
+                pygame.draw.rect(display, (255, 0, 212), obj_rect)
         
 
         #Generate tiles based on map.txt
