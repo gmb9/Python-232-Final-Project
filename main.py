@@ -20,8 +20,8 @@ background = pygame.image.load('background.png')
 
 #Caption and Icon
 pygame.display.set_caption("Platformer")
-#icon = pygame.image.load('icon.png')
-# pygame.display.set_icon(icon)
+icon = pygame.image.load('player.png')
+pygame.display.set_icon(icon)
 
 #Player
 playerImg = pygame.image.load('player.png').convert()
@@ -30,16 +30,6 @@ playerImg.set_colorkey((255, 255, 255))
 #Tiles
 grassImg = pygame.image.load('grass.png')
 dirtImg = pygame.image.load('dirt.png')
-
-#Game Over Text
-over_font = pygame.font.Font('freesansbold.ttf', 64)
-
-#Music
-#mixer.music.load("background.wav")
-#mixer.music.play(-1)
-
-#def display(img, x, y):
-    #screen.blit(img, (x, y))
 
 def load_map(path):
     f = open(path + '.txt', 'r')
@@ -54,10 +44,6 @@ def load_map(path):
     return tiles
 
 tiles = load_map('map')
-
-def game_over_text():
-    over_text = over_font.render("You Lose...", True, (255, 255, 255))
-    screen.blit(over_text, (200, 250))
 
 def draw_text(text, font, color, surface, x, y):
     textobj = font.render(text, 1, color)
@@ -103,18 +89,12 @@ def menu():
         mx, my = pygame.mouse.get_pos()
 
         button_1 = pygame.Rect(50, 100, 50, 25)
-        #button_2 = pygame.Rect(50, 200, 200, 50)
+
         if button_1.collidepoint((mx, my)):
             if click:
                 game()
 
-        #if button_2.collidepoint((mx, my)):
-        #    if click:
-        #        pass
-
-
         pygame.draw.rect(screen, (255, 0, 0), button_1)
-        #pygame.draw.rect(screen, (255, 0, 0), button_2)
 
         draw_text('Play', font, (0, 0, 0), screen, 50, 100)
 
@@ -152,7 +132,7 @@ def game():
         display.fill((126, 19, 158))
 
         #Screen scroll, following character
-        true_scroll[0] += (player_rect.x - true_scroll[0] - 152) / 20 #-152 / -106 to correctly display with display size
+        true_scroll[0] += (player_rect.x - true_scroll[0] - 152) / 20 #-152 / -106 to correctly display with chosen display size
         true_scroll[1] += (player_rect.y - true_scroll[1] - 106) / 20 #/20 makes camera smoother
         scroll = true_scroll.copy()
         scroll[0] = int(scroll[0])
