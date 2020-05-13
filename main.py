@@ -28,8 +28,8 @@ playerImg = pygame.image.load('player.png').convert()
 playerImg.set_colorkey((255, 255, 255))
 
 #Tiles
-grassImg = pygame.image.load('grass.png')
-dirtImg = pygame.image.load('dirt.png')
+tile_1 = pygame.image.load('light_red.png')
+tile_2 = pygame.image.load('dark_red.png')
 
 def load_map(path):
     f = open(path + '.txt', 'r')
@@ -51,17 +51,17 @@ def draw_text(text, font, color, surface, x, y):
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
-def collision_test(rect,tiles):
+def collision_test(rect, tiles):
     hit_list = []
     for tile in tiles:
         if rect.colliderect(tile):
             hit_list.append(tile)
     return hit_list
 
-def move(rect,movement,tiles):
-    collision_types = {'top':False,'bottom':False,'right':False,'left':False}
+def move(rect, movement, tiles):
+    collision_types = {'top':False, 'bottom':False, 'right':False, 'left':False}
     rect.x += movement[0]
-    hit_list = collision_test(rect,tiles)
+    hit_list = collision_test(rect, tiles)
     for tile in hit_list:
         if movement[0] > 0:
             rect.right = tile.left
@@ -70,7 +70,7 @@ def move(rect,movement,tiles):
             rect.left = tile.right
             collision_types['left'] = True
     rect.y += movement[1]
-    hit_list = collision_test(rect,tiles)
+    hit_list = collision_test(rect, tiles)
     for tile in hit_list:
         if movement[1] > 0:
             rect.bottom = tile.top
@@ -160,9 +160,9 @@ def game():
             x = 0
             for tile in layer:
                 if tile == '1':
-                    display.blit(dirtImg,(x*16 - scroll[0], y*16 - scroll[1])) #16x16 is image resolution
+                    display.blit(tile_1, (x*16 - scroll[0], y*16 - scroll[1])) #16x16 is image resolution
                 if tile == '2':
-                    display.blit(grassImg,(x*16 - scroll[0], y*16 - scroll[1]))
+                    display.blit(tile_2, (x*16 - scroll[0], y*16 - scroll[1]))
                 if tile != '0':
                     tile_rects.append(pygame.Rect(x*16, y*16, 16, 16))
                 x += 1
